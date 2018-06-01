@@ -1,45 +1,83 @@
-         CLIPS (6.30 3/17/15)
-CLIPS> (Deftemplate EvaluationOfApartmentForSale
-(Slot NumberOwners
-(type NUMBER)
-(default ?DERIVE))
+        (deftemplate ApartmentState
+    (slot NumberOwners
+        (type NUMBER)
+        (default ?DERIVE)
+    )
 
-(slot Square
-(type NUMBER)
-(default ?DERIVE))
+    (slot Square
+        (type NUMBER)
+        (default ?DERIVE)
+    )
 
-(slot DistanceToSubway
-(type NUMBER)
-(default ?DERIVE))
+    (slot DistanceToSubway
+        (type NUMBER)
+        (default ?DERIVE)
+    )
 
-(slot ParkingPlace
-(type SYMBOL)
-(default ?DERIVE))
+    (slot ParkingPlace
+        (type SYMBOL)
+        (default ?DERIVE)
+    )
 )
 
-Defrule BadFlat
-(ApartmentState (Square ?Square))
-(ApartmentState (Distance ToSubway ?DistanceToSubway))
-(and
-(or
-(test (< ?Square 30 m))
-(test (>= ?Distance ToSubway 2km))
-(ApartmentState (ParkingPlaceNo))
+
+;факты для квартиры
+(deffacts ApartmentStateFacts
+    (ApartmentState
+        (NumberOwners 1)        
+        (Square 31)
+        (DistanceToSubway 1)
+        (ParkingPlace YES)
+    )
 )
-(GoodState)
-)
+
+; если квартира плохая
+(defrule BadFlat
+    (ApartmentState 
+        (Square ?Square)
+    )
+    (ApartmentState 
+        (DistanceToSubway ?DistanceToSubway)
+    )
+    (ApartmentState
+        (ParkingPlace ?ParkingPlace)
+    )
+    
+    (and
+        (test (< ?Square 30))
+        (test (>= ?DistanceToSubway 2))
+        (ApartmentState (ParkingPlace NO))               
+    )
 =>
-(assert (BadFlat))
+    (assert (BadFlat))
 )
 
+; если квартира хорошая
 (defrule GoodFlat
-(ApartmentState (Square ?Square))
-(ApartmentState (Distance ToSubway))
-(and
-(test (>= ?Square 30 m))
-(test(<DistanceToSubway 2km))
-(ApartmentState (ParkingPlace YES))
-(GoodState)
+    (ApartmentState (Square ?Square))
+    (ApartmentState (DistanceToSubway ?DistanceToSubway))
+    (and
+        (test (>= ?Square 30))
+        (test(< ?DistanceToSubway 2))
+        (ApartmentState (ParkingPlace YES))        
+    )
+=>
+    (assert (GoodFlat))
+)
+
+
+(defrule PrintBuy
+    (GoodFlat)
+=>
+    (printout t "Buy this apartment" crlf)
+)
+
+(defrule PrintYouCanBuyIt
+    (BadFlat)
+=>
+    (printout t "You can buy it, but it's bad idea" crlf)
+)
+
 )
 =>
 (assert (GoodFlat))
